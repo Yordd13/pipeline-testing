@@ -1,0 +1,58 @@
+# MySQL for the pipeline's results. See docs/mysql-migration.md, Phase 1.
+#
+#   cd mysql
+#   docker compose up -d        start it (first run pulls the image)
+#   docker compose stop         stop it; the data stays
+#   docker compose down         remove the container; the data stays
+#
+#   docker compose down -v      DELETES THE DATA. There are no backups
+#                               (docs/mysql-migration.md, section 8).
+#
+# Connect from this machine on 127.0.0.1:3307, root password in .env.
+services:
+  mysql:
+    # Pinned by digest, as the SNAP, GDAL and Keycloak images are (D21).
+    image: mysql:8.4.11@sha256:6ea90827b1100f8f2ae306a539f86d2c264a26ed435a2a9f75551dd5c3aeb242
+    # Back whenever Docker starts, because the collector writes to it (Phase 4).
+    restart: unless-stopped
+    # Every time in this project is UTC; nothing is ever converted through a
+    # local zone.
+    #
+    # performance_schema off: it reserves its memory at startup whether or not
+    # anything reads it, and nothing here does. With it on, MySQL sat at 437 MiB
+    # doing nothing, against 195 MiB without (D23). The slow query log does not
+    # depend on it.
+    command: ["--default-time-zone=+00:00", "--performance-schema=OFF"]
+    ports:
+      # 3307, not 3306: this machine also has a native MySQL 8.0 service
+      # (MySQL80) that takes 3306 when started, and a tool must never be able to
+      # reach the wrong server without an error. 127.0.0.1 so it is not offered
+      # to the network.
+      - "127.0.0.1:3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?set MYSQL_ROOT_PASSWORD in mysql/.env}
+      MYSQL_DATABASE: ship_detections
+      # Read by init/10-users.sh.
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?set APP_DB_PASSWORD in mysql/.env}
+    volumes:
+      - data:/var/lib/mysql
+      # Run on a new volume only. On this one, after changing it:
+      #   docker compose exec mysql /docker-entrypoint-initdb.d/10-users.sh
+      - ./init:/docker-entrypoint-initdb.d:ro
+    # SNAP (11 GB), this and Keycloak (1.5 GB) share Docker's 13.65 GiB:
+    # 13.25 together (D14, D24). 768 rather than 512 for headroom under load;
+    # idle it uses about 195 MiB.
+    mem_limit: 768m
+    healthcheck:
+      # Answers even when the login is refused, so it needs no password.
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+volumes:
+  data:
+    # Named explicitly. Without this Compose derives the name from the folder,
+    # and renaming the folder would start a new, empty database beside this one.
+    name: ship-detections-mysql-data

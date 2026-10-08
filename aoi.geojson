@@ -1,0 +1,39 @@
+{
+  "features": [
+    {
+      "geometry": {
+        "coordinates": [
+          [
+            [
+              27.4,
+              41.98
+            ],
+            [
+              30,
+              41.98
+            ],
+            [
+              30,
+              43.75
+            ],
+            [
+              27.4,
+              43.75
+            ],
+            [
+              27.4,
+              41.98
+            ]
+          ]
+        ],
+        "type": "Polygon"
+      },
+      "properties": {
+        "name": "Bulgarian waters AOI",
+        "source": "BulgarianWatersAOI in pipeline/aoi.go"
+      },
+      "type": "Feature"
+    }
+  ],
+  "type": "FeatureCollection"
+}

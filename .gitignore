@@ -1,0 +1,27 @@
+# Scenes, SNAP's working output and SNAP's cache: gigabytes, never committed.
+scenes/*
+!scenes/.gitkeep
+out/*
+!out/.gitkeep
+auxdata/*
+!auxdata/.gitkeep
+
+*.zip
+*.SAFE/
+
+# The coastline in graphs/ is committed: 201 kB, and the pipeline cannot run without it.
+
+# Compiled binaries
+/*.exe
+
+# Credentials — never commit these
+.env
+
+# The AIS collector's output when the viewer starts it (ship-viewer, CollectorRunner).
+logs/
+
+# Documentation and examples stay local, not in the repository.
+/README.md
+/MIGRATION.md
+/.env.example
+/mysql/.env.example

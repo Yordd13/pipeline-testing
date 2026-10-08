@@ -1,0 +1,23 @@
+# Let Git normalise text, but not for the files something other than Windows
+# has to read.
+#
+# Git on Windows checks files out with CRLF by default. A shell script with
+# CRLF fails on its first line — the interpreter named after #! arrives with a
+# carriage return glued to it — and scripts/get_coastline.sh is what produces
+# the coastline the pipeline cannot run without.
+#
+# The SNAP graphs are read inside a Linux container. XML tolerates CRLF, but
+# there is no reason to hand a container Windows line endings, and the graphs
+# are also rewritten by the pipeline itself when a slice holds no land.
+* text=auto
+
+*.sh   text eol=lf
+*.xml  text eol=lf
+
+# The shapefile is binary in every part. Marked explicitly, because a .prj and
+# a .dbf look textual enough for a heuristic to get wrong, and a coastline
+# mangled by line-ending conversion would mask the wrong pixels in silence.
+*.shp binary
+*.shx binary
+*.dbf binary
+*.prj binary
