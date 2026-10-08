@@ -7,7 +7,6 @@ import (
 	"database/sql"
 	"strings"
 	"time"
-
 )
 
 type Position struct {

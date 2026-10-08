@@ -20,7 +20,6 @@ import (
 	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
-
 )
 
 func TestCountPositionsAroundAsksForTheWindowInUTC(t *testing.T) {
